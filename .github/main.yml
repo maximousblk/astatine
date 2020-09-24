@@ -13,4 +13,11 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Run script
+        # this should overwrite the "status.json" file
+        # with the updated stutus on where we are on the curve
         run: node .
+
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Update status
+          file_pattern: status.json

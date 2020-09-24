@@ -8,5 +8,8 @@
   "private": true,
   "scripts": {
     "start": "node ."
+  },
+ "dependencies": {
+    "arweave": "^1.9.1"
   }
 }
