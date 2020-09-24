@@ -1,0 +1,16 @@
+name: Mint
+
+on:
+  workflow_dispatch: # manual override
+  schedule:
+    - cron: "0 * * * *" # every hour
+
+jobs:
+  ship:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup repo
+        uses: actions/checkout@v2
+
+      - name: Run script
+        run: node .

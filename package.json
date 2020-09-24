@@ -1,0 +1,12 @@
+{
+  "name": "peppermint",
+  "version": "0.1.0",
+  "main": "index.js",
+  "repository": "https://github.com/maximousblk/peppermint.git",
+  "author": "Maximous Black <maximousblk@gmail.com>",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "node ."
+  }
+}
