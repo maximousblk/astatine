@@ -25,8 +25,8 @@ async function primeCannon(amount, addresses, time) {
   for (let i = 0; i < addresses.length; i++) {
     const tags = {
       Cannon: "PST",
-      Function: config.emit_curve.name,
-      Completion: time / config.emit_total_time * 100,
+      Function: config.emission_curve.name,
+      Completion: time / config.emission_period * 100,
       Contract: config.token_contract_id,
       "App-Name": "SmartWeaveAction",
       "App-Version": "0.3.0",
@@ -68,8 +68,8 @@ Distribute tokens on a linear decreasing function.
 **/
 function linear(time) {
   let
-    distributionSlope = config.emit_curve.distribution_slope,
-    initialEmitAmount = config.emit_curve.initial_emit_amount;
+    distributionSlope = config.emission_curve.distribution_slope,
+    initialEmitAmount = config.emission_curve.initial_emit_amount;
   
   // Find the unknown variable
   if (distributionSlope === "") {
@@ -87,7 +87,7 @@ function linear(time) {
 const time = getTime();
 let amount;
 
-if (config.emit_curve.name === "linear") {
+if (config.emission_curve.name === "linear") {
   amount = linear(time);
 }
 
