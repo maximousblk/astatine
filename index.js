@@ -13,7 +13,7 @@ function getTime() {
 /*
 Generate all transactions necessary to emit.
 **/
-function primeCannon(amount, addresses, time) {
+async function primeCannon(amount, addresses, time) {
   const
     arweave = Arweave.init({
       host: 'arweave.net',
@@ -52,8 +52,15 @@ function primeCannon(amount, addresses, time) {
 /*
 Send all of the transactions to the corresponding addresses.
 **/
-function emit(transactions) {
-
+async function emit(transactions) {
+  const arweave = Arweave.init({
+    host: 'arweave.net',
+    port: 443,
+    protocol: 'https'
+  });
+  for (let i = 0; i < transactions.length; i++) {
+    await arweave.transactions.post(transactions[i]);
+  }
 }
 
 /*
@@ -66,7 +73,7 @@ function linear(time) {
   
   // Find the unknown variable
   if (distributionSlope === "") {
-    distributionSlope = (2 * (config.emit_amount - (initialEmitAmount * t))) / Math.pow(time, 2);
+    distributionSlope = (2 * (config.emit_amount - (initialEmitAmount * time))) / Math.pow(time, 2);
   } else if (initialEmitAmount === "") {
     initialEmitAmount = ((2 * config.emit_amount) - (distributionSlope * Math.pow(time, 2))) / (2 * time);
   }
