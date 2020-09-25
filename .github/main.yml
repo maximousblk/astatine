@@ -1,4 +1,4 @@
-name: Mint
+name: main
 
 on:
   workflow_dispatch: # manual override
@@ -9,15 +9,19 @@ jobs:
   ship:
     runs-on: ubuntu-latest
     steps:
-      - name: Setup repo
+      - name: setup repo
         uses: actions/checkout@v2
 
-      - name: Run script
+      - name: get keyfile
+        run: echo -e '${{ secrets.ARWEAVE_KEYFILE }}' > keyfile.json
+
+      - name: run script
         # this should overwrite the "status.json" file
         # with the updated stutus on where we are on the curve
         run: node .
 
-      - uses: stefanzweifel/git-auto-commit-action@v4
+      - name: commit status file
+        uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: Update status
+          commit_message: update status
           file_pattern: status.json
