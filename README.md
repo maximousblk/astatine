@@ -1,4 +1,4 @@
-# Profit Sharing Cannon
+# Profit Sharing Token Distributor
 
 A configurable GitHub Action to automatically emit Arweave Profit Sharing Tokens.
 
@@ -17,7 +17,7 @@ You must modify the `config.js` file to meet the needs of your project. Below ar
 - `emission_curve.name`: The type of emission curve
   - Type: String
   - Options:
-    - `Linear`: A decreasing linear emission curve
+    - [`Linear`](./math/linear.pdf): A decreasing linear emission curve
     - `Exponential`: An exponential decay emission curve
 
 For linear curves, you must also choose **one** of the two following variables to fill in. If you fill in both, the emission curve will be inaccurate.
