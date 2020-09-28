@@ -2,17 +2,17 @@ const Arweave = require("arweave");
 const config = require("./config");
 const jwk = "";     // MAX - WE NEED TO PULL THIS FROM THE GITHUB SECRET
 
-/*
-Get the current time in relation to when the cannon was started.
-**/
+/**
+ * Get the current time in relation to when the cannon was started.
+ */
 function getTime() {
 
   return "position on x axis"
 }
 
-/*
-Generate all transactions necessary to emit.
-**/
+/**
+ * Generate all transactions necessary to emit.
+ */
 async function primeCannon(amount, addresses, time) {
   const
     arweave = Arweave.init({
@@ -49,9 +49,9 @@ async function primeCannon(amount, addresses, time) {
   return allTransactions;
 }
 
-/*
-Send all of the transactions to the corresponding addresses.
-**/
+/**
+ * Send all of the transactions to the corresponding addresses.
+ */
 async function emit(transactions) {
   const arweave = Arweave.init({
     host: 'arweave.net',
@@ -63,9 +63,9 @@ async function emit(transactions) {
   }
 }
 
-/*
-Distribute tokens on a linear decreasing function.
-**/
+/**
+ * Distribute tokens on a linear decreasing function.
+ */
 function linear(time) {
   let
     distributionSlope = config.emission_curve.distribution_slope,
@@ -84,11 +84,20 @@ function linear(time) {
   return (distributionSlope * time) + initialEmitAmount;
 }
 
+/**
+ * Distribute tokens on an exponential decay function
+ */
+function exponential(time) {
+  return 0;
+}
+
 const time = getTime();
 let amount;
 
 if (config.emission_curve.name === "linear") {
   amount = linear(time);
+} else if (config.emission_curve.name === "exponential") {
+  amount = exponential(time);
 }
 
 if (amount) {
