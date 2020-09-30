@@ -1,13 +1,13 @@
 {
-  "name": "peppermint",
+  "name": "astatine",
   "version": "0.1.0",
   "main": "index.js",
-  "repository": "https://github.com/maximousblk/peppermint.git",
+  "repository": "https://github.com/maximousblk/astatine.git",
   "author": "Maximous Black <maximousblk@gmail.com>",
   "license": "MIT",
   "private": true,
   "scripts": {
-    "start": "node ."
+    "start": "node index.js"
   },
  "dependencies": {
     "arweave": "^1.9.1"

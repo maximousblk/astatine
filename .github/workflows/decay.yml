@@ -1,24 +1,32 @@
-name: main
+name: decay
 
 on:
-  workflow_dispatch: # manual override
+  workflow_dispatch: # manual trigger
   schedule:
     - cron: "0 * * * *" # every hour
 
 jobs:
-  ship:
+  decay:
     runs-on: ubuntu-latest
     steps:
       - name: setup repo
         uses: actions/checkout@v2
 
+      - name: setup node
+        uses: actions/setup-node@v1
+        with:
+          node-version: "12"
+
+      - name: setup deps
+        run: npm install
+
       - name: get keyfile
         run: echo -e '${{ secrets.ARWEAVE_KEYFILE }}' > keyfile.json
 
-      - name: run script
-        # this should overwrite the "status.json" file
-        # with the updated stutus on where we are on the curve
-        run: node .
+      - name: radiate
+        run: npm run start
+        env:
+          JWK: ${{ secrets.JWK }}
 
       - name: commit status file
         uses: stefanzweifel/git-auto-commit-action@v4

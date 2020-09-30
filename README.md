@@ -1,34 +1,32 @@
-# Profit Sharing Token Distributor
+# astatine
 
-A configurable GitHub Action to automatically emit Arweave Profit Sharing Tokens.
+A configurable Profit Sharing Token Distributor GitHub Action to automatically emit Arweave Profit Sharing Tokens.
 
 ### Configuration
 
 **CONFIG.JS**
 
-You must modify the `config.js` file to meet the needs of your project. Below are explanations for each of the configuration variables.
+You need to modify [`config.js`](config.js) according to your requirements. Below are explanations for each of the configuration variables.
 
-- `token_contract_id`: The contract ID of the token being emitted
-  - Type: String
-- `emit_amount`: Total number of tokens to emit
-  - Type: Integer
-- `emission_period`: Number of seconds that the emission will take to complete (Ex: An emmission that takes 5 years equals `157784760` seconds)
-  - Type: Integer
-- `emission_curve.name`: The type of emission curve
-  - Type: String
-  - Options:
-    - [`Linear`](./math/linear.pdf): A decreasing linear emission curve
-    - `Exponential`: An exponential decay emission curve
+- `token_contract_id: String` - The contract ID of the token being emitted
+- `emit_amount: Integer` - Total number of tokens to emit
+- `emission_period: Integer` - Emission time period in seconds.
+- `emission_curve.name: "linear" || "exponential"`: The type of emission curve. [`linear`](./math/linear.pdf) or `exponential`
 
 For linear curves, you must also choose **one** of the two following variables to fill in. If you fill in both, the emission curve will be inaccurate.
 
-- `emission_curve.distribution_slope`: The slope of the line
-  - Type: Number
-- `emission_curve.initial_emit_amount`: The initial amount of tokens to emit
-  - Type: Integer
+- `emission_curve.distribution_slope: Number`: The slope of the emission curve
+- `emission_curve.initial_emit_amount: Integer`: The initial amount of tokens to emit
 
-**.GITHUB/MAIN.YML**
+**.GITHUB/WORKFLOWS/DECAY.YML**
+
+You need to modify the decay schedule in [`.github/workflows/decay.yml`](.github/workflows/decay.yml) according to your requirements. You can refer to [crontab.guru](https://crontab.guru/) for more info on cron syntax
 
 ```yml
-# update the interval in chron syntax (that's it, right?)
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 * * * *" # update this according to your requirements
 ```
+
+#

@@ -1,6 +1,6 @@
 const Arweave = require("arweave");
 const config = require("./config");
-const jwk = "";     // MAX - WE NEED TO PULL THIS FROM THE GITHUB SECRET
+const jwk = process.env.JWK;
 
 /**
  * Get the current time in relation to when the cannon was started.
@@ -70,7 +70,7 @@ function linear(time) {
   let
     distributionSlope = config.emission_curve.distribution_slope,
     initialEmitAmount = config.emission_curve.initial_emit_amount;
-  
+
   // Find the unknown variable
   if (distributionSlope === "") {
     distributionSlope = (2 * (config.emit_amount - (initialEmitAmount * time))) / Math.pow(time, 2);
