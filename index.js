@@ -6,19 +6,17 @@ const jwk = process.env.JWK;
  * Get the current time in relation to when the cannon was started.
  */
 function getTime() {
-
-  return "position on x axis"
+  return "position on x axis";
 }
 
 /**
  * Generate all transactions necessary to emit.
  */
 async function primeCannon(amount, addresses, time) {
-  const
-    arweave = Arweave.init({
-      host: 'arweave.net',
+  const arweave = Arweave.init({
+      host: "arweave.net",
       port: 443,
-      protocol: 'https'
+      protocol: "https",
     }),
     userGets = Math.floor(amount / addresses.length);
   let allTransactions = [];
@@ -26,20 +24,23 @@ async function primeCannon(amount, addresses, time) {
     const tags = {
       Cannon: "PST",
       Function: config.emission_curve.name,
-      Completion: time / config.emission_period * 100,
+      Completion: (time / config.emission_period) * 100,
       Contract: config.token_contract_id,
       "App-Name": "SmartWeaveAction",
       "App-Version": "0.3.0",
       Input: JSON.stringify({
         function: "transfer",
         target: addresses[i],
-        qty: userGets
-      })
+        qty: userGets,
+      }),
     };
-    const tx = await arweave.createTransaction({
-      target: addresses[i],
-      data: Math.random().toString().slice(-4),
-    }, jwk);
+    const tx = await arweave.createTransaction(
+      {
+        target: addresses[i],
+        data: Math.random().toString().slice(-4),
+      },
+      jwk
+    );
     for (const [key, value] of Object.entries(tags)) {
       tx.addTag(key, value.toString());
     }
@@ -54,9 +55,9 @@ async function primeCannon(amount, addresses, time) {
  */
 async function emit(transactions) {
   const arweave = Arweave.init({
-    host: 'arweave.net',
+    host: "arweave.net",
     port: 443,
-    protocol: 'https'
+    protocol: "https",
   });
   for (let i = 0; i < transactions.length; i++) {
     await arweave.transactions.post(transactions[i]);
@@ -67,21 +68,23 @@ async function emit(transactions) {
  * Distribute tokens on a linear decreasing function.
  */
 function linear(time) {
-  let
-    distributionSlope = config.emission_curve.distribution_slope,
+  let distributionSlope = config.emission_curve.distribution_slope,
     initialEmitAmount = config.emission_curve.initial_emit_amount;
 
   // Find the unknown variable
   if (distributionSlope === "") {
-    distributionSlope = (2 * (config.emit_amount - (initialEmitAmount * time))) / Math.pow(time, 2);
+    distributionSlope =
+      (2 * (config.emit_amount - initialEmitAmount * time)) / Math.pow(time, 2);
   } else if (initialEmitAmount === "") {
-    initialEmitAmount = ((2 * config.emit_amount) - (distributionSlope * Math.pow(time, 2))) / (2 * time);
+    initialEmitAmount =
+      (2 * config.emit_amount - distributionSlope * Math.pow(time, 2)) /
+      (2 * time);
   }
 
   // y=mx+b
   // Amount to emit now = distributionSlope * currentTime + initialEmitAmount
 
-  return (distributionSlope * time) + initialEmitAmount;
+  return distributionSlope * time + initialEmitAmount;
 }
 
 /**
