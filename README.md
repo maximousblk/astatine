@@ -29,4 +29,6 @@ on:
     - cron: "0 * * * *" # update this according to your requirements
 ```
 
-#
+**Secret**
+
+You also need to store your Arweave keyfile as a GitHub secret named `KEYFILE`. Visit the [Secrets documentation](https://docs.github.com/en/free-pro-team@latest/actions/reference/encrypted-secrets) for more info.
