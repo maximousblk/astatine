@@ -1,8 +1,16 @@
 const Arweave = require("arweave");
 const config = require("./config");
-const jwk = JSON.parse(process.env.KEYFILE);
+const keyfile = JSON.parse(process.env.KEYFILE);
 
+// save init time on first run
 if (!fs.existsSync("init")) fs.writeFileSync("init", String(Date.now()));
+
+// initialise arweave
+const arweave = Arweave.init({
+  host: "arweave.net",
+  port: 443,
+  protocol: "https",
+});
 
 /**
  * Get the current time in relation to when the cannon was started.
@@ -16,12 +24,7 @@ function getTime() {
  * Generate all transactions necessary to emit.
  */
 async function primeCannon(amount, addresses, time) {
-  const arweave = Arweave.init({
-      host: "arweave.net",
-      port: 443,
-      protocol: "https",
-    }),
-    userGets = Math.floor(amount / addresses.length);
+  const userGets = Math.floor(amount / addresses.length);
   let allTransactions = [];
   for (let i = 0; i < addresses.length; i++) {
     const tags = {
@@ -38,16 +41,13 @@ async function primeCannon(amount, addresses, time) {
       }),
     };
     const tx = await arweave.createTransaction(
-      {
-        target: addresses[i],
-        data: Math.random().toString().slice(-4),
-      },
-      jwk
+      { target: addresses[i], data: Math.random().toString().slice(-4) },
+      keyfile
     );
     for (const [key, value] of Object.entries(tags)) {
       tx.addTag(key, value.toString());
     }
-    await arweave.transactions.sign(tx, jwk);
+    await arweave.transactions.sign(tx, keyfile);
     allTransactions.push(tx);
   }
   return allTransactions;
@@ -57,18 +57,13 @@ async function primeCannon(amount, addresses, time) {
  * Send all of the transactions to the corresponding addresses.
  */
 async function emit(transactions) {
-  const arweave = Arweave.init({
-    host: "arweave.net",
-    port: 443,
-    protocol: "https",
-  });
   for (let i = 0; i < transactions.length; i++) {
     await arweave.transactions.post(transactions[i]);
   }
 }
 
 /**
- * Distribute tokens on a linear decreasing function.
+ * Distribute tokens on a linear decay function.
  */
 function linear(time) {
   let distributionSlope = config.emission_curve.distribution_slope,
