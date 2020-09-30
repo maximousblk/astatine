@@ -14,19 +14,14 @@ jobs:
 
       - name: setup node
         uses: actions/setup-node@v1
-        with:
-          node-version: "12"
 
       - name: setup deps
         run: npm install
 
-      - name: get keyfile
-        run: echo -e '${{ secrets.ARWEAVE_KEYFILE }}' > keyfile.json
-
       - name: radiate
         run: npm run start
         env:
-          JWK: ${{ secrets.JWK }}
+          KEYFILE: ${{ secrets.KEYFILE }}
 
       - name: commit status file
         uses: stefanzweifel/git-auto-commit-action@v4

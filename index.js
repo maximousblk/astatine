@@ -1,12 +1,15 @@
 const Arweave = require("arweave");
 const config = require("./config");
-const jwk = process.env.JWK;
+const jwk = JSON.parse(process.env.KEYFILE);
+
+if (!fs.existsSync("init")) fs.writeFileSync("init", String(Date.now()));
 
 /**
  * Get the current time in relation to when the cannon was started.
  */
 function getTime() {
-  return "position on x axis";
+  const init = Number(fs.readFileSync("init"));
+  return Math.floor((Date.now() - init) / 1000);
 }
 
 /**
