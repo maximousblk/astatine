@@ -1,4 +1,6 @@
-# astatine
+<img src="./assets/astatine.jpg" align="right" width="200" height="200">
+
+# Project Astatine
 
 A configurable Profit Sharing Token Distributor GitHub Action to automatically emit Arweave Profit Sharing Tokens.
 
