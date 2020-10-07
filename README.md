@@ -1,4 +1,4 @@
-<img src="./assets/astatine.jpg" align="right" width="200" height="200">
+<img src="./assets/astatine.jpg" align="right" width="120" height="120">
 
 # Project Astatine
 
