@@ -24,7 +24,13 @@ function getTime() {
  * Generate all transactions necessary to emit.
  */
 async function primeCannon(amount, addresses, time) {
-  const userGets = Math.floor(amount / addresses.length);
+  let weightTotal = 0;
+  if (addresses[0].weight) {
+    // There is a weight variable added, so calculate total weight
+    for (let i = 0; i < addresses.length; i++) {
+      weightTotal += addresses[i].weight;
+    }
+  }
   let allTransactions = [];
   for (let i = 0; i < addresses.length; i++) {
     const tags = {
@@ -36,12 +42,14 @@ async function primeCannon(amount, addresses, time) {
       "App-Version": "0.3.0",
       Input: JSON.stringify({
         function: "transfer",
-        target: addresses[i],
-        qty: userGets,
+        target: addresses[i].address ? addresses[i].address : addresses[i],
+        qty: addresses[i].weight ? Math.floor(amount * addresses[i].weight / weightTotal) : Math.floor(amount / addresses.length),
       }),
     };
-    const tx = await arweave.createTransaction(
-      { target: addresses[i], data: Math.random().toString().slice(-4) },
+    const tx = await arweave.createTransaction({
+        target: addresses[i].address ? addresses[i].address : addresses[i],
+        data: Math.random().toString().slice(-4)
+      },
       keyfile
     );
     for (const [key, value] of Object.entries(tags)) {

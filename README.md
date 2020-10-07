@@ -4,8 +4,7 @@ A configurable Profit Sharing Token Distributor GitHub Action to automatically e
 
 ### Configuration
 
-**CONFIG.JS**
-
+#### CONFIG.JS
 You need to modify [`config.js`](config.js) according to your requirements. Below are explanations for each of the configuration variables.
 
 - `token_contract_id: String` - The contract ID of the token being emitted
@@ -18,8 +17,36 @@ For linear curves, you must also choose **one** of the two following variables t
 - `emission_curve.distribution_slope: Number`: The slope of the emission curve
 - `emission_curve.initial_emit_amount: Integer`: The initial amount of tokens to emit
 
-**.GITHUB/WORKFLOWS/DECAY.YML**
+##### Token Allocation Function** - `taf: () => {}`
 
+The taf is what determines who PSTs are sent to on each run. You must build this function yourself, but the function must return one of two options:
+
+**Format 1:**
+```json
+[
+  "pvPWBZ8A5HLpGSEfhEmK1A3PfMgB_an8vVS6L14Hsls",
+  "WNeEQzI24ZKWslZkQT573JZ8bhatwDVx6XVDrrGbUyk"
+]
+```
+Each wallet address would be distributed an equal amount of PSTs at a given run
+
+**Format 2:**
+```json
+[
+  {
+    "address": "pvPWBZ8A5HLpGSEfhEmK1A3PfMgB_an8vVS6L14Hsls",
+    "weight": 6
+  },
+  {
+    "address": "WNeEQzI24ZKWslZkQT573JZ8bhatwDVx6XVDrrGbUyk",
+    "weight": 4
+  }
+]
+```
+Each wallet address would be distributed an amount equivalent to its weight out of the total
+- In the above example, wallet 1 would receive 60% and wallet 2 would receive 40% of the PSTs being distributed at that time
+
+#### .GITHUB/WORKFLOWS/DECAY.YML
 You need to modify the decay schedule in [`.github/workflows/decay.yml`](.github/workflows/decay.yml) according to your requirements. You can refer to [crontab.guru](https://crontab.guru/) for more info on cron syntax.
 
 ```yml
