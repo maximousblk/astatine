@@ -10,9 +10,9 @@ You need to modify [`config.js`](config.js) according to your requirements. Belo
 - `token_contract_id: String` - The contract ID of the token being emitted
 - `emit_amount: Integer` - Total number of tokens to emit
 - `emission_period: Integer` - Emission time period in seconds
-- `emission_curve.name: "linear" || "exponential"`: The type of emission curve. [`linear`](./math/linear.pdf) or `exponential`
+- `emission_curve.name: "linear" || "exponential"`: The type of emission curve. [`linear`](./math/linear.pdf) or `exponential` (coming soon)
 
-For linear curves, you must also choose **one** of the two following variables to fill in. If you fill in both, the emission curve will be inaccurate.
+For **linear** curves, you must also choose **one** of the two following variables to fill in. If you fill in both, the emission curve will be inaccurate.
 
 - `emission_curve.distribution_slope: Number`: The slope of the emission curve
 - `emission_curve.initial_emit_amount: Integer`: The initial amount of tokens to emit
