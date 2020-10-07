@@ -42,12 +42,14 @@ async function primeCannon(amount, addresses, time) {
       "App-Version": "0.3.0",
       Input: JSON.stringify({
         function: "transfer",
-        target: addresses[i],
+        target: addresses[i].address ? addresses[i].address : addresses[i],
         qty: addresses[i].weight ? Math.floor(amount * addresses[i].weight / weightTotal) : Math.floor(amount / addresses.length),
       }),
     };
-    const tx = await arweave.createTransaction(
-      { target: addresses[i], data: Math.random().toString().slice(-4) },
+    const tx = await arweave.createTransaction({
+        target: addresses[i].address ? addresses[i].address : addresses[i],
+        data: Math.random().toString().slice(-4)
+      },
       keyfile
     );
     for (const [key, value] of Object.entries(tags)) {
