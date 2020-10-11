@@ -1,6 +1,7 @@
 const Arweave = require("arweave");
 const config = require("./config");
 const keyfile = JSON.parse(process.env.KEYFILE);
+const logFile = require("./distributions.json");
 
 // save init time on first run
 if (!fs.existsSync("init")) fs.writeFileSync("init", String(Date.now()));
@@ -65,9 +66,43 @@ async function primeCannon(amount, addresses, time) {
  * Send all of the transactions to the corresponding addresses.
  */
 async function emit(transactions) {
+  let txIDs = [];
   for (let i = 0; i < transactions.length; i++) {
-    await arweave.transactions.post(transactions[i]);
+    let id = await arweave.transactions.post(transactions[i]);
+    txIDs.push(id);
   }
+  return txIDs;
+}
+
+/**
+ * Log the distribution
+ */
+async function logDistribution(totalAmountAtTime, currentTime, transactions) {
+  let addition = {
+    time: currentTime,
+    amount: totalAmountAtTime,
+    transactions
+  };
+  let allTXs;
+  fs.readFileSync("./distributions.json", "utf8", (err, jsonString) => {
+    if (err) {
+      console.error(`Failed to read log file: ${err}`);
+      return;
+    }
+    allTXs = jsonString;
+  });
+  try {
+    JSON.parse(allTXs);
+  } catch (err) {
+    console.error(`Failed to parse log file: ${err}`);
+    return;
+  }
+  allTXs.push(addition);
+  fs.writeFileSync("./distributions.json", JSON.stringify(allTXs, null, 2), err => {
+    if (err) {
+      console.error(err);
+    }
+  })
 }
 
 /**
@@ -111,5 +146,6 @@ if (config.emission_curve.name === "linear") {
 
 if (amount) {
   let transactions = primeCannon(amount, config.taf, time);
-  emit(transactions);
+  let sentTransactions = await emit(transactions);
+  await logDistribution(amount, time, sentTransactions);
 }
