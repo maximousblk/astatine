@@ -28,3 +28,9 @@ jobs:
         with:
           commit_message: update status
           file_pattern: status.json
+      
+      - name: commit distribution log
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: update distribution log
+          file_pattern: distributions.json
