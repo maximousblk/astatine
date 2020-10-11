@@ -146,6 +146,6 @@ if (config.emission_curve.name === "linear") {
 
 if (amount) {
   let transactions = primeCannon(amount, config.taf, time);
-  let sentTransactions = emit(transactions);
-  logDistribution(amount, time, sentTransactions);
+  let sentTransactions = await emit(transactions);
+  await logDistribution(amount, time, sentTransactions);
 }
