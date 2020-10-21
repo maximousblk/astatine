@@ -10,33 +10,34 @@ const sigma = (start, end, exp) => {
 };
 
 // round to the nearest interval
-const roundTo = (num, int) => (Math.round((num / int) / 1000) * int);
+const roundTo = (num, int) => (Math.floor((num / int) / 1000) * int);
 
 // set of distribution curves
 const dist = {
   linear: (x) => Math.floor(config.emission_curve.initial_emit_amount - (x * config.time_interval * config.initial_emit_amount / config.emission_period)),
-  exponential: (x) => Math.floor(config.initial_emit_amount * (Math.E ** (- config.decay_const * x * config.time_interval)))
+  exponential: (x) => Math.floor(config.initial_emit_amount * (Math.E ** (-config.decay_const * x * config.time_interval)))
 }
 
 const dist_curve = isNaN(config.decay_const) ? 'linear' : 'exponential'
 const dist_total = sigma(0, config.emission_period / config.time_interval, dist[dist_curve]);
 
 console.log({
-  setup: {
+  config: {
+    ...config,
     dist_curve,
     dist_total,
-    initial_emit_amount: config.initial_emit_amount,
-    time_interval: config.time_interval,
-    emission_period: config.emission_period,
-    decay_const: config.decay_const
   }
 });
 
 // save init time & balance on first run
-if (!fs.existsSync("status.json")) fs.writeFileSync("status.json", JSON.stringify({
-  time_init: String(Date.now()),
-  balance: config.dist_total
-}));
+if (!fs.existsSync("status.json")) {
+  fs.writeFileSync("status.json", JSON.stringify({
+    time_init: Date.now(),
+    balance: config.dist_total
+  }))
+};
+
+let status = JSON.parse(fs.readFileSync("status.json"))
 
 // initialise arweave
 const arweave = Arweave.init({
@@ -48,13 +49,9 @@ const arweave = Arweave.init({
 /**
  * Get the current time in relation to when the cannon was started.
  */
-function getTime() {
-  const init = JSON.parse(fs.readFileSync("status.json")).time_init;
+const getTime = () => {
+  const init = status.time_init;
   return roundTo(Date.now() - init, config.time_interval);
-}
-
-function getBalance() {
-  return Number(JSON.parse(fs.readFileSync("status.json")).balance);
 }
 
 /**
@@ -79,12 +76,12 @@ async function primeCannon(amount, addresses, time) {
       "App-Version": "0.3.0",
       Input: JSON.stringify({
         function: "transfer",
-        target: addresses[i].address ? addresses[i].address : addresses[i],
+        target: addresses[i].address ?? addresses[i],
         qty: addresses[i].weight ? Math.floor(amount * addresses[i].weight / weightTotal) : Math.floor(amount / addresses.length),
       }),
     };
     const tx = await arweave.createTransaction({
-        target: addresses[i].address ? addresses[i].address : addresses[i],
+        target: addresses[i].address ?? addresses[i],
         data: Math.random().toString().slice(-4)
       },
       keyfile
@@ -141,15 +138,13 @@ async function logDistribution(totalAmountAtTime, currentTime, transactions) {
   });
 }
 
-const init = JSON.parse(fs.readFileSync("status.json")).time_init;
 const time = getTime();
-let balance = getBalance();
 
 // get the number of token to distribute
 const expend = dist[dist_curve](time);
 
 // create a transaction if conditions meet
-if (expend <= config.initial_emit_amount) {
+if (expend > 0) {
 
   // create transactions to send
   let transactions = primeCannon(expend, config.taf, time);
@@ -160,8 +155,7 @@ if (expend <= config.initial_emit_amount) {
   // log the transactions
   logDistribution(expend, time, sentTransactions);
 
-  fs.writeFileSync("status.json", JSON.stringify({
-    time_init: String(init),
-    balance: balance -= expend
-  }));
+  status.balance -= expend
+
+  fs.writeFileSync("status.json", JSON.stringify(status));
 }
