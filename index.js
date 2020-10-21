@@ -52,7 +52,7 @@ const arweave = Arweave.init({
  */
 const getTime = () => {
   const init = status.time_init;
-  return roundTo(Date.now() - init, config.time_interval);
+  return roundTo(Date.now(), config.time_interval);
 }
 
 /**
