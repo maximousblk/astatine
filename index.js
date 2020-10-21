@@ -141,24 +141,25 @@ async function logDistribution(totalAmountAtTime, currentTime, transactions) {
 
 async function runDistribution() {
   const time = getTime();
+  console.log("STATUS AFTER");
+  console.log(status);
 
   // get the number of token to distribute
   const expend = dist[dist_curve](time);
   
   // create a transaction if conditions meet
   if (expend > 0) {
-  
+    console.log("Going to expend: " + expend);
     // create transactions to send
     let transactions = await primeCannon(expend, config.taf, time);
-  
     // send the transactions
     let sentTransactions = await emit(transactions);
-  
+    console.log(sentTransactions);
     // log the transactions
     await logDistribution(expend, time, sentTransactions);
-  
     status.balance -= expend
-  
+    console.log("STATUS AFTER");
+    console.log(status);
     fs.writeFileSync("status.json", JSON.stringify(status));
   }
 }
