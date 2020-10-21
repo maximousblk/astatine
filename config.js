@@ -4,9 +4,7 @@ const config = {
   time_interval: 60,           // I
   initial_emit_amount: 300,    // A
   decay_const: 0.02,           // k
-  taf: () => {
-    return ["-zkZpuG7DiIsdFzRVgWdLQ3zxU2bDY-0r90Ri8lxL-A"];
-  },
+  taf: ["-zkZpuG7DiIsdFzRVgWdLQ3zxU2bDY-0r90Ri8lxL-A"]
 };
 
 module.exports = config;
