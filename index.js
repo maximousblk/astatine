@@ -11,7 +11,7 @@ const sigma = (start, end, exp) => {
 };
 
 // round to the nearest interval
-const roundTo = (num, int) => (Math.floor((num / int) / 1000) * int);
+const roundTo = (num, int) => (Math.round((num / int) / 1000) * int);
 
 // set of distribution curves
 const dist = {
