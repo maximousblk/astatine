@@ -3,8 +3,45 @@ const config = require("./config");
 const keyfile = JSON.parse(process.env.KEYFILE);
 const logFile = require("./distributions.json");
 
+// math Σ function
+const sigma = (start: number, end: number, exp: (x: number) => number) => {
+  let result = 0;
+  for (let n = start; n <= end; ++n) result += exp(n);
+  return result;
+};
+
+// to simulate cron duration
+const sleep = async (sec: number) => new Promise((res) => setTimeout(res, sec * 1000));
+
+// round to the nearest interval
+const roundTo = (num: number, int: number) => (Math.round((num / int) / 1000) * int);
+
+// generate an array of run numbers => [1, 2, 3 ... n]
+const runs = (n: number) => Array.from(Array(n), (v, k) => k + 1);
+
+// set of distribution curves
+const dist = {
+  linear: (x: number) => Math.floor(config.emission_curve.initial_emit_amount - (x * config.time_interval * config.initial_emit_amount / config.emission_period)),
+  exponential: (x: number) => Math.floor(config.initial_emit_amount * (Math.E ** (- config.decay_const * x * config.time_interval)))
+}
+
+const dist_curve = isNaN(config.decay_const) ? 'linear' : 'exponential'
+const dist_total = sigma(0, config.emission_period / config.time_interval, dist[dist_curve]);
+
+console.log({
+  setup: {
+    dist_curve,
+    dist_total,
+    config.initial_emit_amount,
+    config.time_interval,
+    config.emission_period,
+    config.decay_const
+  }
+});
+
 // save init time on first run
 if (!fs.existsSync("init")) fs.writeFileSync("init", String(Date.now()));
+if (!fs.existsSync("bal")) fs.writeFileSync("bal", config.dist_total);
 
 // initialise arweave
 const arweave = Arweave.init({
@@ -19,6 +56,10 @@ const arweave = Arweave.init({
 function getTime() {
   const init = Number(fs.readFileSync("init"));
   return Math.floor((Date.now() - init) / 1000);
+}
+
+function getBalance() {
+  return Number(fs.readFileSync("bal"));
 }
 
 /**
@@ -105,47 +146,34 @@ async function logDistribution(totalAmountAtTime, currentTime, transactions) {
   })
 }
 
-/**
- * Distribute tokens on a linear decay function.
- */
-function linear(time) {
-  let distributionSlope = config.emission_curve.distribution_slope,
-    initialEmitAmount = config.emission_curve.initial_emit_amount;
+const time_init = getTime();
+let time = roundTo(Date.now() - time_init, config.time_interval);
+let balance = getBalance();
 
-  // Find the unknown variable
-  if (distributionSlope === "") {
-    distributionSlope =
-      (2 * (config.emit_amount - initialEmitAmount * time)) / Math.pow(time, 2);
-  } else if (initialEmitAmount === "") {
-    initialEmitAmount =
-      (2 * config.emit_amount - distributionSlope * Math.pow(time, 2)) /
-      (2 * time);
-  }
+for (const run of runs((config.emission_period / config.time_interval) + 1)) { // this would actually be an infinite loop
+  // time passed rounded to nearest interval
+  time = roundTo(Date.now() - time_init, config.time_interval);
 
-  // y=mx+b
-  // Amount to emit now = distributionSlope * currentTime + initialEmitAmount
+  // get the number of token to distribute
+  const expend = dist[dist_curve](run - 1);
 
-  return distributionSlope * time + initialEmitAmount;
-}
+  // create a transaction if conditions meet
+  if (expend <= config.initial_emit_amount && expend > 0) {
 
-/**
- * Distribute tokens on an exponential decay function
- */
-function exponential(time) {
-  return 0;
-}
+    // create transactions to send
+    let transactions = primeCannon(expend, config.taf, time);
 
-const time = getTime();
-let amount;
+    // send the transactions
+    let sentTransactions = await emit(transactions);
 
-if (config.emission_curve.name === "linear") {
-  amount = linear(time);
-} else if (config.emission_curve.name === "exponential") {
-  amount = exponential(time);
-}
+    // log the transactions
+    await logDistribution(expend, time, sentTransactions);
 
-if (amount) {
-  let transactions = primeCannon(amount, config.taf, time);
-  let sentTransactions = await emit(transactions);
-  await logDistribution(amount, time, sentTransactions);
+    // subtract amount distributed from the balance & update the file
+    balance -= expend;
+    fs.writeFileSync("bal", balance);
+  } 
+
+  // end executation and wait for next cron trigger
+  await sleep(config.emission_period);
 }
