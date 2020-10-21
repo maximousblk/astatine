@@ -1,4 +1,5 @@
 const Arweave = require("arweave");
+const fs = require('fs');
 const config = require("./config");
 const keyfile = JSON.parse(process.env.KEYFILE);
 
