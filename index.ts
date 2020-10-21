@@ -1,7 +1,6 @@
 const Arweave = require("arweave");
 const config = require("./config");
 const keyfile = JSON.parse(process.env.KEYFILE);
-const logFile = require("./distributions.json");
 
 // math Σ function
 const sigma = (start: number, end: number, exp: (x: number) => number) => {
@@ -10,14 +9,8 @@ const sigma = (start: number, end: number, exp: (x: number) => number) => {
   return result;
 };
 
-// to simulate cron duration
-const sleep = async (sec: number) => new Promise((res) => setTimeout(res, sec * 1000));
-
 // round to the nearest interval
 const roundTo = (num: number, int: number) => (Math.round((num / int) / 1000) * int);
-
-// generate an array of run numbers => [1, 2, 3 ... n]
-const runs = (n: number) => Array.from(Array(n), (v, k) => k + 1);
 
 // set of distribution curves
 const dist = {
@@ -32,16 +25,18 @@ console.log({
   setup: {
     dist_curve,
     dist_total,
-    config.initial_emit_amount,
-    config.time_interval,
-    config.emission_period,
-    config.decay_const
+    initial_emit_amount: config.initial_emit_amount,
+    time_interval: config.time_interval,
+    emission_period: config.emission_period,
+    decay_const: config.decay_const
   }
 });
 
-// save init time on first run
-if (!fs.existsSync("init")) fs.writeFileSync("init", String(Date.now()));
-if (!fs.existsSync("bal")) fs.writeFileSync("bal", config.dist_total);
+// save init time & balance on first run
+if (!fs.existsSync("status.json")) fs.writeFileSync("status.json", JSON.stringify({
+  time_init: String(Date.now()),
+  balance: config.dist_total
+}));
 
 // initialise arweave
 const arweave = Arweave.init({
@@ -54,12 +49,12 @@ const arweave = Arweave.init({
  * Get the current time in relation to when the cannon was started.
  */
 function getTime() {
-  const init = Number(fs.readFileSync("init"));
-  return Math.floor((Date.now() - init) / 1000);
+  const init = JSON.parse(fs.readFileSync("status.json")).time_init;
+  return roundTo(Date.now() - init, config.time_interval);
 }
 
 function getBalance() {
-  return Number(fs.readFileSync("bal"));
+  return Number(JSON.parse(fs.readFileSync("status.json")).balance);
 }
 
 /**
@@ -143,37 +138,30 @@ async function logDistribution(totalAmountAtTime, currentTime, transactions) {
     if (err) {
       console.error(err);
     }
-  })
+  });
 }
 
-const time_init = getTime();
-let time = roundTo(Date.now() - time_init, config.time_interval);
+const init = JSON.parse(fs.readFileSync("status.json")).time_init;
+const time = getTime();
 let balance = getBalance();
 
-for (const run of runs((config.emission_period / config.time_interval) + 1)) { // this would actually be an infinite loop
-  // time passed rounded to nearest interval
-  time = roundTo(Date.now() - time_init, config.time_interval);
+// get the number of token to distribute
+const expend = dist[dist_curve](time);
 
-  // get the number of token to distribute
-  const expend = dist[dist_curve](run - 1);
+// create a transaction if conditions meet
+if (expend <= config.initial_emit_amount) {
 
-  // create a transaction if conditions meet
-  if (expend <= config.initial_emit_amount && expend > 0) {
+  // create transactions to send
+  let transactions = primeCannon(expend, config.taf, time);
 
-    // create transactions to send
-    let transactions = primeCannon(expend, config.taf, time);
+  // send the transactions
+  let sentTransactions = await emit(transactions);
 
-    // send the transactions
-    let sentTransactions = await emit(transactions);
+  // log the transactions
+  logDistribution(expend, time, sentTransactions);
 
-    // log the transactions
-    await logDistribution(expend, time, sentTransactions);
-
-    // subtract amount distributed from the balance & update the file
-    balance -= expend;
-    fs.writeFileSync("bal", balance);
-  } 
-
-  // end executation and wait for next cron trigger
-  await sleep(config.emission_period);
+  fs.writeFileSync("status.json", JSON.stringify({
+    time_init: String(init),
+    balance: balance -= expend
+  }));
 }

@@ -67,7 +67,7 @@ on:
     - cron: "0 * * * *" # update this according to your requirements
 ```
 
-> Note: The cron interval **must** be equivalent to the `time_interval` variable in the configuration.
+> Note: The cron interval **must** be equivalent to the `time_interval` variable in the configuration and **can not** be less than 1 minute.
 
 **Arweave Keyfile**
 
