@@ -141,7 +141,7 @@ async function logDistribution(totalAmountAtTime, currentTime, transactions) {
 
 async function runDistribution() {
   const time = getTime();
-  console.log("STATUS AFTER");
+  console.log("STATUS BEFORE");
   console.log(status);
 
   // get the number of token to distribute
