@@ -118,7 +118,7 @@ async function logDistribution(totalAmountAtTime, currentTime, transactions) {
     transactions
   };
   let allTXs;
-  fs.readFileSync("./distributions.json", "utf8", (err, jsonString) => {
+  fs.readFileSync("./distributions.json", (err, jsonString) => {
     if (err) {
       console.error(`Failed to read log file: ${err}`);
       return;
