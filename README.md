@@ -16,7 +16,7 @@ You need to modify [`config.js`](config.js) according to your requirements. Belo
 
 - `token_contract_id: String` - The contract ID of the token being emitted
 - `emission_period: Integer` - **(E)** Emission time period in seconds
-- `time_interval: Integer` - **(I)** Number of hours in between each distribution cycle
+- `time_interval: Integer` - **(I)** Number of seconds in between each distribution cycle
 - `initial_emit_amount: Integer` - **(A)** The initial amount of tokens to emit
 - `decay_const` - **(k)** The decay constant for an exponential decay curve
 

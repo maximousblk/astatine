@@ -69,7 +69,7 @@ async function primeCannon(amount, addresses, time) {
   for (let i = 0; i < addresses.length; i++) {
     const tags = {
       Cannon: "PST",
-      Function: config.emission_curve.name,
+      Function: dist_curve,
       Completion: (time / config.emission_period) * 100,
       Contract: config.token_contract_id,
       "App-Name": "SmartWeaveAction",
