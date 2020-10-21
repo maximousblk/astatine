@@ -3,19 +3,19 @@ const config = require("./config");
 const keyfile = JSON.parse(process.env.KEYFILE);
 
 // math Σ function
-const sigma = (start: number, end: number, exp: (x: number) => number) => {
+const sigma = (start, end, exp) => {
   let result = 0;
   for (let n = start; n <= end; ++n) result += exp(n);
   return result;
 };
 
 // round to the nearest interval
-const roundTo = (num: number, int: number) => (Math.round((num / int) / 1000) * int);
+const roundTo = (num, int) => (Math.round((num / int) / 1000) * int);
 
 // set of distribution curves
 const dist = {
-  linear: (x: number) => Math.floor(config.emission_curve.initial_emit_amount - (x * config.time_interval * config.initial_emit_amount / config.emission_period)),
-  exponential: (x: number) => Math.floor(config.initial_emit_amount * (Math.E ** (- config.decay_const * x * config.time_interval)))
+  linear: (x) => Math.floor(config.emission_curve.initial_emit_amount - (x * config.time_interval * config.initial_emit_amount / config.emission_period)),
+  exponential: (x) => Math.floor(config.initial_emit_amount * (Math.E ** (- config.decay_const * x * config.time_interval)))
 }
 
 const dist_curve = isNaN(config.decay_const) ? 'linear' : 'exponential'
