@@ -34,7 +34,7 @@ console.log({
 if (!fs.existsSync("status.json")) {
   fs.writeFileSync("status.json", JSON.stringify({
     time_init: Date.now(),
-    balance: config.dist_total
+    balance: dist_total
   }))
 };
 
