@@ -150,7 +150,7 @@ if (expend > 0) {
   let transactions = primeCannon(expend, config.taf, time);
 
   // send the transactions
-  let sentTransactions = await emit(transactions);
+  let sentTransactions = emit(transactions);
 
   // log the transactions
   logDistribution(expend, time, sentTransactions);
