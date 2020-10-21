@@ -1,10 +1,42 @@
 const Arweave = require("arweave");
 const config = require("./config");
 const keyfile = JSON.parse(process.env.KEYFILE);
-const logFile = require("./distributions.json");
 
-// save init time on first run
-if (!fs.existsSync("init")) fs.writeFileSync("init", String(Date.now()));
+// math Σ function
+const sigma = (start: number, end: number, exp: (x: number) => number) => {
+  let result = 0;
+  for (let n = start; n <= end; ++n) result += exp(n);
+  return result;
+};
+
+// round to the nearest interval
+const roundTo = (num: number, int: number) => (Math.round((num / int) / 1000) * int);
+
+// set of distribution curves
+const dist = {
+  linear: (x: number) => Math.floor(config.emission_curve.initial_emit_amount - (x * config.time_interval * config.initial_emit_amount / config.emission_period)),
+  exponential: (x: number) => Math.floor(config.initial_emit_amount * (Math.E ** (- config.decay_const * x * config.time_interval)))
+}
+
+const dist_curve = isNaN(config.decay_const) ? 'linear' : 'exponential'
+const dist_total = sigma(0, config.emission_period / config.time_interval, dist[dist_curve]);
+
+console.log({
+  setup: {
+    dist_curve,
+    dist_total,
+    initial_emit_amount: config.initial_emit_amount,
+    time_interval: config.time_interval,
+    emission_period: config.emission_period,
+    decay_const: config.decay_const
+  }
+});
+
+// save init time & balance on first run
+if (!fs.existsSync("status.json")) fs.writeFileSync("status.json", JSON.stringify({
+  time_init: String(Date.now()),
+  balance: config.dist_total
+}));
 
 // initialise arweave
 const arweave = Arweave.init({
@@ -17,8 +49,12 @@ const arweave = Arweave.init({
  * Get the current time in relation to when the cannon was started.
  */
 function getTime() {
-  const init = Number(fs.readFileSync("init"));
-  return Math.floor((Date.now() - init) / 1000);
+  const init = JSON.parse(fs.readFileSync("status.json")).time_init;
+  return roundTo(Date.now() - init, config.time_interval);
+}
+
+function getBalance() {
+  return Number(JSON.parse(fs.readFileSync("status.json")).balance);
 }
 
 /**
@@ -102,50 +138,30 @@ async function logDistribution(totalAmountAtTime, currentTime, transactions) {
     if (err) {
       console.error(err);
     }
-  })
+  });
 }
 
-/**
- * Distribute tokens on a linear decay function.
- */
-function linear(time) {
-  let distributionSlope = config.emission_curve.distribution_slope,
-    initialEmitAmount = config.emission_curve.initial_emit_amount;
-
-  // Find the unknown variable
-  if (distributionSlope === "") {
-    distributionSlope =
-      (2 * (config.emit_amount - initialEmitAmount * time)) / Math.pow(time, 2);
-  } else if (initialEmitAmount === "") {
-    initialEmitAmount =
-      (2 * config.emit_amount - distributionSlope * Math.pow(time, 2)) /
-      (2 * time);
-  }
-
-  // y=mx+b
-  // Amount to emit now = distributionSlope * currentTime + initialEmitAmount
-
-  return distributionSlope * time + initialEmitAmount;
-}
-
-/**
- * Distribute tokens on an exponential decay function
- */
-function exponential(time) {
-  return 0;
-}
-
+const init = JSON.parse(fs.readFileSync("status.json")).time_init;
 const time = getTime();
-let amount;
+let balance = getBalance();
 
-if (config.emission_curve.name === "linear") {
-  amount = linear(time);
-} else if (config.emission_curve.name === "exponential") {
-  amount = exponential(time);
-}
+// get the number of token to distribute
+const expend = dist[dist_curve](time);
 
-if (amount) {
-  let transactions = primeCannon(amount, config.taf, time);
+// create a transaction if conditions meet
+if (expend <= config.initial_emit_amount) {
+
+  // create transactions to send
+  let transactions = primeCannon(expend, config.taf, time);
+
+  // send the transactions
   let sentTransactions = await emit(transactions);
-  await logDistribution(amount, time, sentTransactions);
+
+  // log the transactions
+  logDistribution(expend, time, sentTransactions);
+
+  fs.writeFileSync("status.json", JSON.stringify({
+    time_init: String(init),
+    balance: balance -= expend
+  }));
 }
