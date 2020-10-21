@@ -30,3 +30,4 @@ jobs:
         with:
           commit_message: update status
           file_pattern: status.json distributions.json
+          skip_dirty_check: true
