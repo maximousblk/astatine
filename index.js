@@ -124,6 +124,7 @@ async function logDistribution(totalAmountAtTime, currentTime, transactions) {
       return;
     }
     allTXs = jsonString;
+    console.log(allTXs);
   });
   try {
     JSON.parse(allTXs);
