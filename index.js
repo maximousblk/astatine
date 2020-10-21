@@ -139,24 +139,28 @@ async function logDistribution(totalAmountAtTime, currentTime, transactions) {
   });
 }
 
-const time = getTime();
+async function runDistribution() {
+  const time = getTime();
 
-// get the number of token to distribute
-const expend = dist[dist_curve](time);
-
-// create a transaction if conditions meet
-if (expend > 0) {
-
-  // create transactions to send
-  let transactions = primeCannon(expend, config.taf, time);
-
-  // send the transactions
-  let sentTransactions = emit(transactions);
-
-  // log the transactions
-  logDistribution(expend, time, sentTransactions);
-
-  status.balance -= expend
-
-  fs.writeFileSync("status.json", JSON.stringify(status));
+  // get the number of token to distribute
+  const expend = dist[dist_curve](time);
+  
+  // create a transaction if conditions meet
+  if (expend > 0) {
+  
+    // create transactions to send
+    let transactions = await primeCannon(expend, config.taf, time);
+  
+    // send the transactions
+    let sentTransactions = await emit(transactions);
+  
+    // log the transactions
+    await logDistribution(expend, time, sentTransactions);
+  
+    status.balance -= expend
+  
+    fs.writeFileSync("status.json", JSON.stringify(status));
+  }
 }
+
+runDistribution();
