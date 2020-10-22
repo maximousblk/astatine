@@ -127,10 +127,6 @@ async function emit(transactions: any) {
   return txIDs;
 }
 
-/**
- * Log the distribution
- */
-
 async function runDistribution() {
   const time = roundTo(Date.now() - status.time_init, config.time_interval);
 
@@ -138,7 +134,9 @@ async function runDistribution() {
   const expend = dist[dist_curve](time);
 
   // create a transaction if conditions meet
-  if (expend > 0) {
+  if (time <= config.emission_period && expend > 0 && status.balance > 0) {
+    console.log({ time, expend, balance: status.balance });
+
     // create transactions to send
     let transactions = await primeCannon(expend, config.token_allocations, time);
     // send the transactions
@@ -155,6 +153,8 @@ async function runDistribution() {
     fs.writeFileSync('status.json', JSON.stringify(status, null, 2));
 
     console.log(2, status);
+  } else {
+    console.log('unmet conditions', { time, expend, balance: status.balance });
   }
 }
 
