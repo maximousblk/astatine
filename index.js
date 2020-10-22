@@ -1,6 +1,7 @@
 const Arweave = require("arweave");
 const fs = require('fs');
 const config = require("./config");
+require('dotenv').config();
 const keyfile = JSON.parse(process.env.KEYFILE);
 
 // math Σ function
@@ -24,9 +25,9 @@ const dist_total = sigma(0, config.emission_period / config.time_interval, dist[
 
 console.log({
   config: {
-    ...config,
     dist_curve,
     dist_total,
+    ...config,
   }
 });
 
@@ -38,7 +39,7 @@ if (!fs.existsSync("status.json")) {
   }))
 };
 
-let status = JSON.parse(fs.readFileSync("status.json"))
+let status = JSON.parse(fs.readFileSync("status.json"));
 
 // initialise arweave
 const arweave = Arweave.init({
@@ -46,14 +47,6 @@ const arweave = Arweave.init({
   port: 443,
   protocol: "https",
 });
-
-/**
- * Get the current time in relation to when the cannon was started.
- */
-const getTime = () => {
-  const init = status.time_init;
-  return roundTo(Date.now() - init, config.time_interval);
-}
 
 /**
  * Generate all transactions necessary to emit.
@@ -102,65 +95,47 @@ async function primeCannon(amount, addresses, time) {
 async function emit(transactions) {
   let txIDs = [];
   for (let i = 0; i < transactions.length; i++) {
-    let id = await arweave.transactions.post(transactions[i]);
-    txIDs.push(id);
+    await arweave.transactions.post(transactions[i]);
+    txIDs.push(transactions[i].id);
   }
+  console.log({txIDs});
   return txIDs;
 }
 
 /**
  * Log the distribution
  */
-async function logDistribution(totalAmountAtTime, currentTime, transactions) {
+function logDistribution(totalAmountAtTime, currentTime, transactions) {
   let addition = {
     time: currentTime,
     amount: totalAmountAtTime,
     transactions
   };
-  let allTXs;
-  fs.readFileSync("./distributions.json", (err, jsonString) => {
-    if (err) {
-      console.error(`Failed to read log file: ${err}`);
-      return;
-    }
-    allTXs = jsonString;
-    console.log(allTXs);
-  });
-  try {
-    JSON.parse(allTXs);
-  } catch (err) {
-    console.error(`Failed to parse log file: ${err}`);
-    return;
-  }
+
+  let allTXs = JSON.parse(fs.readFileSync("distributions.json").toString())
+
   allTXs.push(addition);
-  fs.writeFileSync("./distributions.json", JSON.stringify(allTXs, null, 2), err => {
-    if (err) {
-      console.error(err);
-    }
-  });
+
+  fs.writeFileSync("distributions.json", JSON.stringify(allTXs, null, 2));
 }
 
 async function runDistribution() {
-  const time = getTime();
-  console.log("STATUS BEFORE");
-  console.log(status);
+  const time = roundTo(Date.now() - status.time_init, config.time_interval);
 
   // get the number of token to distribute
   const expend = dist[dist_curve](time);
   
   // create a transaction if conditions meet
   if (expend > 0) {
-    console.log("Going to expend: " + expend);
     // create transactions to send
     let transactions = await primeCannon(expend, config.taf, time);
     // send the transactions
     let sentTransactions = await emit(transactions);
     console.log(sentTransactions);
     // log the transactions
-    await logDistribution(expend, time, sentTransactions);
+    logDistribution(expend, time, sentTransactions);
+
     status.balance -= expend
-    console.log("STATUS AFTER");
-    console.log(status);
     fs.writeFileSync("status.json", JSON.stringify(status));
   }
 }

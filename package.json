@@ -9,7 +9,8 @@
   "scripts": {
     "start": "node index.js"
   },
- "dependencies": {
-    "arweave": "^1.9.1"
+  "dependencies": {
+    "arweave": "^1.9.1",
+    "dotenv": "^8.2.0"
   }
 }
