@@ -39,8 +39,8 @@ const floorTo = (num: number, int: number) => Math.floor(num / int / 1000) * int
  * set of distribution curves
  */
 const dist = {
-  linear: (x: number) => Math.floor(config.initial_emit_amount - (x * config.initial_emit_amount) / config.emission_period),
-  exponential: (x: number) => Math.floor(config.initial_emit_amount * Math.E ** (-config.decay_const * x)),
+  linear: (x: number) => Math.floor(config.initial_emit_amount - (x * config.time_interval * config.initial_emit_amount) / config.emission_period),
+  exponential: (x: number) => Math.floor(config.initial_emit_amount * Math.E ** (-config.decay_const * x * config.time_interval)),
 };
 
 const dist_curve: string = isNaN(config.decay_const) ? 'linear' : 'exponential';
@@ -128,7 +128,7 @@ async function runDistribution() {
   const time = floorTo(Date.now() - status.time_init, config.time_interval);
 
   // get the number of token to distribute
-  const expend = dist[dist_curve](time);
+  const expend = dist[dist_curve](time / config.time_interval);
 
   // create a transaction if conditions meet
   if (time <= config.emission_period && expend > 0 && status.balance > 0) {
