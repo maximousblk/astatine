@@ -62,6 +62,8 @@ if (!fs.existsSync('status.json')) {
 
 let status: status = JSON.parse(fs.readFileSync('status.json').toString());
 
+console.log(1, status);
+
 // initialise arweave
 const arweave = Arweave.init({
   host: 'arweave.net',
@@ -150,6 +152,8 @@ async function runDistribution() {
 
     status.balance -= expend;
     fs.writeFileSync('status.json', JSON.stringify(status));
+
+    console.log(2, status);
   }
 }
 
