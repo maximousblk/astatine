@@ -1,6 +1,6 @@
 {
   "time_init": 1603376149998,
-  "balance": 121,
+  "balance": 0,
   "distributions": [
     {
       "time": 0,
@@ -14,6 +14,13 @@
       "expend": 191,
       "transactions": [
         "FgboiHx4vrWmG1Y_lM9X8sPElDtYvqbH6xR9H4gBbbU"
+      ]
+    },
+    {
+      "time": 1800,
+      "expend": 121,
+      "transactions": [
+        "EnkxqemDeutJfYzUoiwy4fkHNpN0qllgOcb2P1KAB3Y"
       ]
     }
   ]
