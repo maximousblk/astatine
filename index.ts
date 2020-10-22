@@ -33,7 +33,7 @@ const sigma = (start: number, end: number, exp: (x: number) => number) => {
 /**
  * round to the nearest interval
  */
-const roundTo = (num: number, int: number) => Math.round(num / int / 1000) * int;
+const floorTo = (num: number, int: number) => Math.floor(num / int / 1000) * int;
 
 /**
  * set of distribution curves
@@ -125,7 +125,7 @@ async function emit(transactions: any) {
 }
 
 async function runDistribution() {
-  const time = roundTo(Date.now() - status.time_init, config.time_interval);
+  const time = floorTo(Date.now() - status.time_init, config.time_interval);
 
   // get the number of token to distribute
   const expend = dist[dist_curve](time);
