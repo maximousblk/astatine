@@ -121,7 +121,6 @@ async function emit(transactions: any) {
     await arweave.transactions.post(transactions[i]);
     txIDs.push(transactions[i].id);
   }
-  console.log({ txIDs });
   return txIDs;
 }
 
@@ -139,7 +138,6 @@ async function runDistribution() {
     let transactions = await primeCannon(expend, config.token_allocations, time);
     // send the transactions
     let sentTransactions = await emit(transactions);
-    console.log(sentTransactions);
 
     status.distributions.push({
       time,
