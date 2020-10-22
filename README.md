@@ -18,7 +18,7 @@ You need to modify [`config.js`](config.js) according to your requirements. Belo
 - `initial_emit_amount: Integer` - **(_A_)** The initial amount of tokens to emit
 - `decay_const` - **(_k_)** The decay constant for an exponential decay curve
 
-> Note: Set `decay_const` as null if you're using linear curve!
+> Note: Set `decay_const` as `undefined` if you're using linear curve!
 
 #### Token Allocation Function
 
