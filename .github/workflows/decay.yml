@@ -2,8 +2,8 @@ name: decay
 
 on:
   workflow_dispatch: # manual trigger
-  schedule:
-    - cron: '*/15 * * * *'
+  # schedule:
+  #   - cron: '* * * * *'
 
 jobs:
   decay:
