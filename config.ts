@@ -3,8 +3,8 @@ import { config } from './index';
 const token_allocation_function: () => string[] = () => [];
 
 const config: config = {
-  emission_period: 600, // E
-  time_interval: 300, // I
+  emission_period: 600000, // E
+  time_interval: 300000, // I
   initial_emit_amount: 300, // A
   decay_const: 0.0025, // k
   token_contract_id: 'fE2OcfjlS-sHqG5K8QvxE8wHtcqKxS-YV0bDEgxo-eI',

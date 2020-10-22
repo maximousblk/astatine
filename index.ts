@@ -15,6 +15,7 @@ export interface config {
 
 interface status {
   time_init: number;
+  run: number;
   balance: number;
   distributions: { time: number; expend: number; transactions: string[] }[];
 }
@@ -50,18 +51,14 @@ console.log({ config: { dist_curve, dist_total, ...config } });
 
 // save init time & balance on first run
 if (!fs.existsSync('status.json')) {
-  fs.writeFileSync(
-    'status.json',
-    JSON.stringify(
-      {
-        time_init: Date.now(),
-        balance: dist_total,
-        distributions: [],
-      },
-      null,
-      2
-    )
-  );
+  const init_status: status = {
+    time_init: Date.now(),
+    run: 1,
+    balance: dist_total,
+    distributions: [],
+  };
+
+  fs.writeFileSync('status.json', JSON.stringify(init_status, null, 2));
 }
 
 let status: status = JSON.parse(fs.readFileSync('status.json').toString());
