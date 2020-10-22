@@ -16,10 +16,10 @@ export interface config {
 interface status {
   time_init: number;
   balance: number;
-  distributions: { time: number; expend: number; transactions: string[] }[];
+  distributions: { run: number; time: number; expend: number; transactions: string[] }[];
 }
 
-const keyfile: any = JSON.parse(process.env.KEYFILE);
+const keyfile = JSON.parse(process.env.KEYFILE);
 
 /**
  * math Σ function
@@ -61,7 +61,7 @@ if (!fs.existsSync('status.json')) {
 
 let status: status = JSON.parse(fs.readFileSync('status.json').toString());
 
-console.log(1, status);
+console.log('previous status:', status);
 
 // initialise arweave
 const arweave = Arweave.init({
@@ -81,6 +81,7 @@ async function primeCannon(amount: number, addresses: any, time: number) {
       weightTotal += addresses[i]?.weight;
     }
   }
+
   let allTransactions = [];
   for (let i = 0; i < addresses.length; i++) {
     const tags = {
@@ -96,6 +97,7 @@ async function primeCannon(amount: number, addresses: any, time: number) {
         qty: addresses[i].weight ? Math.floor((amount * addresses[i].weight) / weightTotal) : Math.floor(amount / addresses.length),
       }),
     };
+
     const tx: Transaction = await arweave.createTransaction(
       {
         target: addresses[i].address ?? addresses[i],
@@ -103,12 +105,15 @@ async function primeCannon(amount: number, addresses: any, time: number) {
       },
       keyfile
     );
+
     for (const [key, value] of Object.entries(tags)) {
       tx.addTag(key, value.toString());
     }
+
     await arweave.transactions.sign(tx, keyfile);
     allTransactions.push(tx);
   }
+
   return allTransactions;
 }
 
@@ -124,7 +129,8 @@ async function emit(transactions: any) {
   return txIDs;
 }
 
-async function runDistribution() {
+// start distribution
+(async () => {
   const time = floorTo(Date.now() - status.time_init, config.time_interval);
 
   // get the number of token to distribute
@@ -140,6 +146,7 @@ async function runDistribution() {
     let sentTransactions = await emit(transactions);
 
     status.distributions.push({
+      run: status.distributions.length + 1,
       time,
       expend,
       transactions: sentTransactions,
@@ -148,10 +155,8 @@ async function runDistribution() {
     status.balance -= expend;
     fs.writeFileSync('status.json', JSON.stringify(status, null, 2));
 
-    console.log(2, status);
+    console.log('Current Status:', status);
   } else {
-    console.log('unmet conditions', { time, expend, balance: status.balance });
+    console.log('Unmet Conditions', { time, expend, balance: status.balance });
   }
-}
-
-runDistribution();
+})();
