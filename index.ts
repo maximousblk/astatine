@@ -144,7 +144,7 @@ async function runDistribution() {
     status.distributions.push({
       time,
       expend,
-      transactions,
+      transactions: sentTransactions,
     });
 
     status.balance -= expend;
