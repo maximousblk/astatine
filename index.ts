@@ -52,11 +52,15 @@ console.log({ config: { dist_curve, dist_total, ...config } });
 if (!fs.existsSync('status.json')) {
   fs.writeFileSync(
     'status.json',
-    JSON.stringify({
-      time_init: Date.now(),
-      balance: dist_total,
-      distributions: [],
-    })
+    JSON.stringify(
+      {
+        time_init: Date.now(),
+        balance: dist_total,
+        distributions: [],
+      },
+      null,
+      2
+    )
   );
 }
 
@@ -151,7 +155,7 @@ async function runDistribution() {
     });
 
     status.balance -= expend;
-    fs.writeFileSync('status.json', JSON.stringify(status));
+    fs.writeFileSync('status.json', JSON.stringify(status, null, 2));
 
     console.log(2, status);
   }
