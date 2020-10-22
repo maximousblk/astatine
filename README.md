@@ -1,4 +1,4 @@
-<img src="./.github/assets/logo.png" width="140">
+<img src=".github/assets/logo.png" width="140">
 
 # Astatine
 
@@ -7,8 +7,6 @@ A Configurable Automated Profit Sharing Token Distributor.
 ## Configuration
 
 You must use the [linear](https://www.desmos.com/calculator/05ofbspddf) or [exponential](https://www.desmos.com/calculator/mvcfqcvtwp) decay calculators to determine the configuration.
-
-### Configuration
 
 You need to modify [`config.js`](config.js) according to your requirements. Below are explanations for each of the configuration variables.
 
@@ -20,7 +18,7 @@ You need to modify [`config.js`](config.js) according to your requirements. Belo
 
 > Note: Set `decay_const` as `undefined` if you're using linear curve!
 
-#### Token Allocation Function
+### Token Allocation Function
 
 The taf is what determines who PSTs are sent to on each run. You must build this function yourself, but the function must return one of two options:
 
@@ -64,7 +62,7 @@ on:
 
 > Note: GitHub's cron scheduler has an error margin of ±5 minutes, so try to keep the interval greater than at least 15 minutes. Also GitHub doesn't support cron interval less than 1 minute or greater than 1 year.
 
-**Arweave Keyfile**
+### Arweave Keyfile
 
 You also need to store your Arweave keyfile as a GitHub Secret named `KEYFILE` and the contents of your arweave keyfile as the value. Visit the [Secrets documentation](https://docs.github.com/en/free-pro-team@latest/actions/reference/encrypted-secrets) for more info.
 
