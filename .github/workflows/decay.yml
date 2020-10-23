@@ -3,7 +3,7 @@ name: decay
 on:
   workflow_dispatch: # manual trigger
   # schedule:
-  #   - cron: "0 * * * *" # every hour
+  #   - cron: '* * * * *'
 
 jobs:
   decay:
@@ -29,4 +29,5 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: update status
-          file_pattern: status.json distributions.json
+          file_pattern: status.json
+          branch: master
